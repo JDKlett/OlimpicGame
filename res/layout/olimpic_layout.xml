@@ -42,7 +42,10 @@
       	android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/relativeLayout1"
-        android:orientation="vertical" >
+        android:orientation="vertical" 
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp">
+        
     </com.game.olimpics.RunnerView>
     
 </RelativeLayout>

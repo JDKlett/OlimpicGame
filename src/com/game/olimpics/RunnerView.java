@@ -18,11 +18,13 @@ public class RunnerView extends SurfaceView implements Runnable {
 
 	SurfaceHolder mainHolder;
 	Thread renderingThread = null;
+	int padding = 0;
 	boolean isRunning = false;
 
 	public RunnerView(Context context) {
 		super(context);
 		mainHolder = getHolder();
+		
 		
 	}
 	
@@ -50,17 +52,19 @@ public class RunnerView extends SurfaceView implements Runnable {
 		Canvas canvas = null;
 		int height = 0;
 		int width = 0;
+		int netWidth=0;
 		while(isRunning && !heightSet){
 			if(!mainHolder.getSurface().isValid())
 				continue;
 		canvas = mainHolder.lockCanvas();
-		height = canvas.getHeight();
-		width = canvas.getWidth();
+		height = getHeight();
+		width = getWidth();
+		netWidth = width-getPaddingLeft()-getPaddingRight();
 		heightSet = true;
-		mainHolder.unlockCanvasAndPost(canvas);
+			mainHolder.unlockCanvasAndPost(canvas);
 		}
 		Rect bg_dest = new Rect(0,0,width, height);
-		RectF rect = new RectF(20,height/8,100,2*(height/8) );
+		RectF rect = new RectF(getPaddingLeft(),height-netWidth/4+getPaddingLeft(),netWidth/4,height);
 		Bitmap bg_pic = BitmapFactory.decodeResource(getResources(), R.drawable.terra_ws);
 		Rect bg_src = new Rect(0,0,bg_pic.getWidth(), bg_pic.getHeight());
 		while(isRunning){
