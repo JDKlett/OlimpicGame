@@ -46,29 +46,61 @@ public class RunnerView extends SurfaceView implements Runnable {
 	 */
 	@Override
 	public void run() {
-		Paint p = new Paint();
-		p.setColor(Color.BLUE);
+		Paint [] p = new Paint[4];
+		for (int i = 0; i<p.length;i++){
+			p[i] = new Paint();
+		}
+		
+		p[0].setColor(Color.YELLOW);
+		p[1].setColor(Color.BLUE);
+		p[2].setColor(Color.BLACK);
+		p[3].setColor(Color.RED);
+		
 		boolean heightSet = false;
 		Canvas canvas = null;
 		int height = 0;
 		int width = 0;
 		int netWidth=0;
+		int step = 0;
 		while(isRunning && !heightSet){
 			if(!mainHolder.getSurface().isValid())
 				continue;
 		canvas = mainHolder.lockCanvas();
 		height = getHeight();
 		width = getWidth();
-		netWidth = width-getPaddingLeft()-getPaddingRight();
 		heightSet = true;
 			mainHolder.unlockCanvasAndPost(canvas);
 		}
-		Rect bg_dest = new Rect(0,0,width, height);
-		RectF rect = new RectF(getPaddingLeft(),height-netWidth/4+getPaddingLeft(),netWidth/4,height);
+		netWidth = width-getPaddingLeft()-getPaddingRight();
+		step = netWidth/4;
+		
+		Rect bg_dest = new Rect(0,0,width-1, height-1);
+		RectF [] runners = new RectF[4];
+		
+		for (int i = 0; i<runners.length;i++){
+			runners[i]=	new RectF();
+		}
 		Bitmap bg_pic = BitmapFactory.decodeResource(getResources(), R.drawable.terra_ws);
 		Rect bg_src = new Rect(0,0,bg_pic.getWidth(), bg_pic.getHeight());
+		
+		int [] targetHeights = {0,0,0,0};
+		int [] speeds = {0,10,20,30};
+		
 		while(isRunning){
-
+			
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			for(int i =0; i<targetHeights.length;i++){
+				targetHeights[i] +=speeds[i];
+				if(targetHeights[i]>height+step+getPaddingLeft()){
+					targetHeights[i]=0;
+				}
+			}
 			
 			//Se la superficie non e' valida, esce dal while
 			if(!mainHolder.getSurface().isValid())
@@ -76,7 +108,10 @@ public class RunnerView extends SurfaceView implements Runnable {
 			//Prendiamo il mutex sul canvas
 			canvas = mainHolder.lockCanvas();
 			canvas.drawBitmap(bg_pic, bg_src, bg_dest, null);
-			canvas.drawRect(rect, p);
+			for(int i = 0; i<runners.length;i++){
+				runners[i].set(getPaddingLeft()+i*step,targetHeights[i],step*(i+1)+getPaddingLeft(),targetHeights[i]+step);
+				canvas.drawRect(runners[i], p[i]);
+			}
 			mainHolder.unlockCanvasAndPost(canvas);
 
 		}

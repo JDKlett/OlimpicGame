@@ -37,14 +37,19 @@
             android:text="@string/b_button" />
     </RelativeLayout>
 
+    <!--Background specification:
+    	margin:16px/8dp on xhdpi
+    	corsia:227px
+    	line:4px-->
+    
     <com.game.olimpics.RunnerView
         android:id="@+id/runner"
       	android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/relativeLayout1"
         android:orientation="vertical" 
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp">
+        android:paddingRight="7dp"
+        android:paddingLeft="7dp">
         
     </com.game.olimpics.RunnerView>
     
