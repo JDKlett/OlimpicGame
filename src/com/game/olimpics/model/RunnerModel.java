@@ -27,4 +27,7 @@ public class RunnerModel {
 		position+=speed;
 	}
 	
+	public void increaseSpeed(){
+		position+=3*(speed);
+	}
 }

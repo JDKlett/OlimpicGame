@@ -30,7 +30,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int terra_ws=0x7f020005;
     }
     public static final class id {
-        public static final int a_buotton=0x7f070003;
+        public static final int a_button=0x7f070003;
         public static final int b_button=0x7f070002;
         public static final int main=0x7f070000;
         public static final int relativeLayout1=0x7f070001;

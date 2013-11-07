@@ -3,11 +3,14 @@ package com.game.olimpics.controller;
 import java.util.Vector;
 
 import android.view.View;
+
+import com.game.olimpics.R;
 import com.game.olimpics.RunnerView;
 
 import com.game.olimpics.model.RunnerModel;
+import android.view.View.OnClickListener;
 
-public class RunnerController implements Runnable{
+public class RunnerController implements Runnable, OnClickListener{
 
 	public static final int RUNNERS_NUMBER = 4;
 	private boolean isRunning = false;
@@ -46,7 +49,8 @@ public class RunnerController implements Runnable{
 		
 		for(int i = 0; i<heights.length; i++){
 			runners[i].updatePosition();
-			heights[i] = runners[i].getPosition()- game_status;
+			heights[i] = runners[i].getPosition()-runners[0].getPosition();
+			System.out.println("Runner "+i+" position: "+heights[i]);
 		}
 		
 		((RunnerView)view_list[0]).setHeights(heights);
@@ -88,11 +92,16 @@ public class RunnerController implements Runnable{
 		try {
 			Thread.sleep(50);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		updateHeights();
 		}
+	}
+
+	@Override
+	public void onClick(View v) {
+		runners[0].increaseSpeed();
+		
 	}
 
 }

@@ -17,7 +17,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewTreeObserver.OnDrawListener;
 
-public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.Callback {
+
+public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.Callback{
 
 	private SurfaceHolder mainHolder;
 	private Thread renderingThread = null;
@@ -81,7 +82,7 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 		while (isRunning) {
 
 			try {
-				Thread.sleep(16);
+				Thread.sleep(25);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -89,9 +90,7 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 			// Se la superficie non e' valida, esce dal while
 								
 			onDrawCanvas();
-			
-
-		}
+			}
 	}
 
 	private synchronized void onDrawCanvas(){
@@ -100,9 +99,8 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 		canvas = mainHolder.lockCanvas();
 		canvas.drawBitmap(bg_pic, bg_src, bg_dest, null);
 		for (int i = 0; i < runners.length; i++) {
-			runners[i].set(getPaddingLeft() + i * step, heights[i],
-					step * (i + 1) + getPaddingLeft(), heights[i]
-							+ step);
+			runners[i].set(getPaddingLeft() + i * step, height-heights[i]-step,
+					step * (i + 1) + getPaddingLeft(), height-heights[i]);
 			canvas.drawRect(runners[i], runner_drawables[i]);
 		}
 		mainHolder.unlockCanvasAndPost(canvas);
