@@ -59,12 +59,11 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 		for (int i = 0; i < runner_drawables.length; i++) {
 			runner_drawables[i] = new Paint();
 		}
+		
 		runner_drawables[0].setColor(Color.YELLOW);
 		runner_drawables[1].setColor(Color.BLUE);
 		runner_drawables[2].setColor(Color.BLACK);
 		runner_drawables[3].setColor(Color.RED);
-		
-		
 		
 		mainHolder.addCallback(this);
 	}
@@ -82,7 +81,7 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 		while (isRunning) {
 
 			try {
-				Thread.sleep(25);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -166,7 +165,6 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
 		isSurfaceReady = false;
 	}
 

@@ -12,7 +12,8 @@ import android.widget.RelativeLayout;
 public class GameActivity extends Activity {
 
 	RunnerView runner = null;
-	Button button = null;
+	Button button_a = null;
+	Button button_b = null;
 	
 	private RunnerController rc = null;
 	
@@ -27,9 +28,12 @@ public class GameActivity extends Activity {
 		runner = (RunnerView) findViewById(R.id.runner);
 		//runner = new RunnerView(this);
 		rc = new RunnerController(new SurfaceView []{runner});
-		button = (Button)findViewById(R.id.a_button);
 		
-		button.setOnClickListener(rc);
+		button_a = (Button)findViewById(R.id.a_button);
+		button_a.setOnClickListener(rc);
+		
+		button_b = (Button)findViewById(R.id.b_button);
+		button_b.setOnClickListener(rc);
 		
 	}
 	
