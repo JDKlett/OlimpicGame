@@ -1,5 +1,7 @@
 package com.game.olimpics;
 
+import com.game.olimpics.controller.RunnerController;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.SurfaceView;
@@ -8,7 +10,8 @@ import android.widget.RelativeLayout;
 
 public class GameActivity extends Activity {
 
-	RunnerView runner;
+	RunnerView runner = null;
+	private RunnerController rc = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +23,8 @@ public class GameActivity extends Activity {
 		//mi basta dichiararlo in entrambi ed il gioco e` fatto
 		runner = (RunnerView) findViewById(R.id.runner);
 		//runner = new RunnerView(this);
+		rc = new RunnerController(new SurfaceView []{runner});
+		
 	}
 	
 	@Override
@@ -27,12 +32,14 @@ public class GameActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onPause();
 		runner.pause();
+		rc.pause();
 	}
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
 		runner.resume();
+		rc.resume();
 	}
 
 	@Override
@@ -40,6 +47,7 @@ public class GameActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		runner.pause();
+		rc.pause();
 		
 	}
 	

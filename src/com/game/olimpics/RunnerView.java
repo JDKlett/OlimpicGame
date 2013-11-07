@@ -15,12 +15,12 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewTreeObserver.OnDrawListener;
 
-public class RunnerView extends SurfaceView implements Runnable {
+public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.Callback {
 
 	private SurfaceHolder mainHolder;
 	private Thread renderingThread = null;
-	private RunnerController rc = null;
 	private int padding = 0;
 	private int height = 0;
 	private int width = 0;
@@ -28,8 +28,15 @@ public class RunnerView extends SurfaceView implements Runnable {
 	private int step = 0;
 	// questo attributo e' attualmente un paint ma deve essere esteso
 	Paint[] runner_drawables;
+	int [] heights = {0,0,0,0};
 	boolean isRunning = false;
-
+	boolean isSurfaceReady = false;
+	Canvas canvas = null;
+	Rect bg_dest = null;
+	RectF[] runners = null;
+	Bitmap bg_pic = null;
+	Rect bg_src = null;
+	
 	public RunnerView(Context context) {
 		super(context);
 		init();
@@ -55,8 +62,10 @@ public class RunnerView extends SurfaceView implements Runnable {
 		runner_drawables[1].setColor(Color.BLUE);
 		runner_drawables[2].setColor(Color.BLACK);
 		runner_drawables[3].setColor(Color.RED);
-	
-		rc = new RunnerController();
+		
+		
+		
+		mainHolder.addCallback(this);
 	}
 
 	/**
@@ -65,32 +74,9 @@ public class RunnerView extends SurfaceView implements Runnable {
 	@Override
 	public void run() {
 
-		boolean heightSet = false;
-		Canvas canvas = null;
-
-		while (isRunning && !heightSet) {
-			if (!mainHolder.getSurface().isValid())
-				continue;
-			canvas = mainHolder.lockCanvas();
-			height = getHeight();
-			width = getWidth();
-			heightSet = true;
-			mainHolder.unlockCanvasAndPost(canvas);
-		}
-		netWidth = width - getPaddingLeft() - getPaddingRight();
-		step = netWidth / 4;
-
-		Rect bg_dest = new Rect(0, 0, width - 1, height - 1);
-		RectF[] runners = new RectF[4];
-
-		for (int i = 0; i < runners.length; i++) {
-			runners[i] = new RectF();
-		}
-		Bitmap bg_pic = BitmapFactory.decodeResource(getResources(),
-				R.drawable.terra_ws);
-		Rect bg_src = new Rect(0, 0, bg_pic.getWidth(), bg_pic.getHeight());
-
-		int[] speeds = { 0, 10, 20, 30 };
+		while (!isSurfaceReady);
+		
+		
 
 		while (isRunning) {
 
@@ -101,24 +87,27 @@ public class RunnerView extends SurfaceView implements Runnable {
 				e.printStackTrace();
 			}
 			// Se la superficie non e' valida, esce dal while
-			if (!mainHolder.getSurface().isValid())
-				continue;
-						
-			rc.updateHeights();
-			// Prendiamo il mutex sul canvas
-			canvas = mainHolder.lockCanvas();
-			canvas.drawBitmap(bg_pic, bg_src, bg_dest, null);
-			for (int i = 0; i < runners.length; i++) {
-				runners[i].set(getPaddingLeft() + i * step, rc.getHeights()[i],
-						step * (i + 1) + getPaddingLeft(), rc.getHeights()[i]
-								+ step);
-				canvas.drawRect(runners[i], runner_drawables[i]);
-			}
-			mainHolder.unlockCanvasAndPost(canvas);
+								
+			onDrawCanvas();
+			
 
 		}
 	}
 
+	private synchronized void onDrawCanvas(){
+		
+		// Prendiamo il mutex sul canvas
+		canvas = mainHolder.lockCanvas();
+		canvas.drawBitmap(bg_pic, bg_src, bg_dest, null);
+		for (int i = 0; i < runners.length; i++) {
+			runners[i].set(getPaddingLeft() + i * step, heights[i],
+					step * (i + 1) + getPaddingLeft(), heights[i]
+							+ step);
+			canvas.drawRect(runners[i], runner_drawables[i]);
+		}
+		mainHolder.unlockCanvasAndPost(canvas);
+	}
+	
 	/*
 	 * Metodi di SurfaceView per la gestione del ciclo di vita
 	 */
@@ -134,6 +123,7 @@ public class RunnerView extends SurfaceView implements Runnable {
 			}
 			break;
 		}
+		
 		renderingThread = null;
 	}
 
@@ -144,4 +134,46 @@ public class RunnerView extends SurfaceView implements Runnable {
 		renderingThread.start();
 	}
 
+	@Override
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+			int height) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void surfaceCreated(SurfaceHolder holder) {
+		
+		canvas = mainHolder.lockCanvas();
+		height = getHeight();
+		width = getWidth();
+		mainHolder.unlockCanvasAndPost(canvas);
+		
+		netWidth = width - getPaddingLeft() - getPaddingRight();
+		step = netWidth / 4;
+
+		bg_dest = new Rect(0, 0, width, height);
+		runners = new RectF[4];
+
+		for (int i = 0; i < runners.length; i++) {
+			runners[i] = new RectF();
+		}
+		bg_pic = BitmapFactory.decodeResource(getResources(),
+				R.drawable.terra_ws);
+		bg_src = new Rect(0, 0, bg_pic.getWidth(), bg_pic.getHeight());
+		
+		isSurfaceReady = true;
+		
+	}
+
+	@Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		// TODO Auto-generated method stub
+		isSurfaceReady = false;
+	}
+
+	public void setHeights(int [] heights){
+		this.heights = heights;
+	}
+	
 }
