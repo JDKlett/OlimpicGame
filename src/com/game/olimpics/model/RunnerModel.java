@@ -23,8 +23,8 @@ public class RunnerModel {
 		return position;
 	}
 
-	public void updatePosition() {
-		position+=speed;
+	public void updatePosition(long timeElapsed) {
+		position+=(speed*timeElapsed/1000);
 	}
 	
 	public void increaseSpeed(){

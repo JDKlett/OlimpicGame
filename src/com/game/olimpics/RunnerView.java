@@ -20,6 +20,8 @@ import android.view.ViewTreeObserver.OnDrawListener;
 
 public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.Callback{
 
+	private long currentTime = 0;
+	
 	private SurfaceHolder mainHolder;
 	private Thread renderingThread = null;
 	private int padding = 0;
@@ -76,12 +78,14 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 
 		while (!isSurfaceReady);
 		
-		
+		long previousFrameTime = System.currentTimeMillis();
 
 		while (isRunning) {
 
+			
+			
 			try {
-				Thread.sleep(10);
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -89,7 +93,11 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 			// Se la superficie non e' valida, esce dal while
 								
 			onDrawCanvas();
-			}
+			
+			currentTime = System.currentTimeMillis()-previousFrameTime;
+			previousFrameTime = currentTime;
+			
+		}
 	}
 
 	private synchronized void onDrawCanvas(){
@@ -103,6 +111,7 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 			canvas.drawRect(runners[i], runner_drawables[i]);
 		}
 		mainHolder.unlockCanvasAndPost(canvas);
+		//notify();
 	}
 	
 	/*
@@ -170,6 +179,10 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 
 	public void setHeights(int [] heights){
 		this.heights = heights;
+	}
+	
+	public long getCurrentTime(){
+		return currentTime;
 	}
 	
 }

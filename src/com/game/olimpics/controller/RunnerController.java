@@ -24,7 +24,6 @@ public class RunnerController implements Runnable, OnClickListener{
 	private int game_status;
 	private View [] view_list;
 	private int current_click;
-
 	public RunnerController(View [] view_list){
 
 		game_status = 0;
@@ -49,16 +48,17 @@ public class RunnerController implements Runnable, OnClickListener{
 
 	private void updateHeights(){
 
+	
 		game_status+=5;
 
 		for(int i = 0; i<heights.length; i++){
-			runners[i].updatePosition();
+			runners[i].updatePosition(((RunnerView)view_list[0]).getCurrentTime());
 			heights[i] = runners[i].getPosition()-runners[0].getPosition();
 			//System.out.println("Runner "+i+" position: "+heights[i]);
 		}
 
 		((RunnerView)view_list[0]).setHeights(heights);
-
+		
 	}
 
 	public int [] getHeights(){
@@ -91,21 +91,15 @@ public class RunnerController implements Runnable, OnClickListener{
 
 	@Override
 	public void run() {
-
+		
 		while(isRunning){
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 			updateHeights();
 		}
 	}
 
 	@Override
 	public void onClick(View v) {
-		
-		
+	
 		if(current_click==ClicksID.A_BUTTON && R.id.b_button==v.getId()){
 			runners[0].increaseSpeed();
 			System.out.println("Good!");
