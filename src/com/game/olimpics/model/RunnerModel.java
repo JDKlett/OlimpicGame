@@ -2,32 +2,38 @@ package com.game.olimpics.model;
 
 public class RunnerModel {
 
-	private int speed;
-	private int position;
+	private double speed;
+	private double position;
+	private boolean bonus=false;
 
 	public RunnerModel() {
 		speed = 0;
 		position = 0;
 	}
 
-	public int getSpeed() {
+	public double getSpeed() {
 		return speed;
 	}
 
-	public void setSpeed(int speed) {
+	public void setSpeed(double speed) {
 		this.speed = speed;
 	}
 
 
-	public int getPosition() {
+	public double getPosition() {
 		return position;
 	}
 
-	public void updatePosition(long timeElapsed) {
-		position+=(speed*timeElapsed/1000);
+	public synchronized void updatePosition(long timeElapsed) {
+		position+=(speed*timeElapsed);
 	}
 	
-	public void increaseSpeed(){
-		position+=3*(speed);
+	public synchronized void increaseSpeed(){
+		speed = speed*1.05;
 	}
+	
+	public synchronized void decreaseSpeed(){
+		speed = speed/1.5;
+	}
+	
 }

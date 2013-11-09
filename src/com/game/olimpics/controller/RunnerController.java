@@ -19,7 +19,7 @@ public class RunnerController implements Runnable, OnClickListener{
 
 
 	private RunnerModel[] runners;
-	private int static_speeds [];
+	private double static_speeds [];
 	private int [] heights = {0,0,0,0};
 	private int game_status;
 	private View [] view_list;
@@ -28,32 +28,33 @@ public class RunnerController implements Runnable, OnClickListener{
 
 		game_status = 0;
 
-		static_speeds = new int[4];
+		static_speeds = new double[4];
 		runners = new RunnerModel[RUNNERS_NUMBER];
 
 		for(int i=0;i<static_speeds.length;i++){
-			static_speeds[i] = (int) Math.round((Math.random()*5+1));
-		}
+			static_speeds[i] = ((float)i+1)/100000;
+		}		
+		this.view_list = view_list;
+		
 		for(int i = 0; i<runners.length; i++){
 			runners[i] = new RunnerModel();
 			//static behavior
 			runners[i].setSpeed(static_speeds[i]);
 		}
 
-		this.view_list = view_list;
 
 		current_click = ClicksID.A_BUTTON;
 
 	}
 
-	private void updateHeights(){
+	private synchronized void updateHeights(){
 
 	
 		game_status+=5;
-
+		
 		for(int i = 0; i<heights.length; i++){
-			runners[i].updatePosition(((RunnerView)view_list[0]).getCurrentTime());
-			heights[i] = runners[i].getPosition()-runners[0].getPosition();
+			runners[i].updatePosition(((RunnerView)view_list[0]).getCurrentTimeElapsed());
+			heights[i] = (int)(runners[i].getPosition()-runners[0].getPosition());
 			//System.out.println("Runner "+i+" position: "+heights[i]);
 		}
 
@@ -104,15 +105,14 @@ public class RunnerController implements Runnable, OnClickListener{
 			runners[0].increaseSpeed();
 			System.out.println("Good!");
 			current_click=ClicksID.B_BUTTON;
-			
 		}else if(current_click==ClicksID.B_BUTTON && R.id.a_button==v.getId() ){
 			runners[0].increaseSpeed();
 			System.out.println("Good!");
 			current_click=ClicksID.A_BUTTON;
-			
 		}else{
 		
 		System.out.println("Wrong!");
+			runners[0].decreaseSpeed();
 		}
 		
 	}

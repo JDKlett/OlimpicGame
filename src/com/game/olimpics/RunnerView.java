@@ -1,7 +1,5 @@
 package com.game.olimpics;
 
-import com.game.olimpics.controller.RunnerController;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,11 +15,13 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewTreeObserver.OnDrawListener;
 
+public class RunnerView extends SurfaceView implements Runnable,
+		SurfaceHolder.Callback {
 
-public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.Callback{
+	private long startTime = 0;
+	private long currentTimeElapsed = 0;
+	private long previousTimeElapsed = 0;
 
-	private long currentTime = 0;
-	
 	private SurfaceHolder mainHolder;
 	private Thread renderingThread = null;
 	private int padding = 0;
@@ -31,7 +31,7 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 	private int step = 0;
 	// questo attributo e' attualmente un paint ma deve essere esteso
 	Paint[] runner_drawables;
-	int [] heights = {0,0,0,0};
+	int[] heights = { 0, 0, 0, 0 };
 	boolean isRunning = false;
 	boolean isSurfaceReady = false;
 	Canvas canvas = null;
@@ -39,7 +39,7 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 	RectF[] runners = null;
 	Bitmap bg_pic = null;
 	Rect bg_src = null;
-	
+
 	public RunnerView(Context context) {
 		super(context);
 		init();
@@ -61,12 +61,12 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 		for (int i = 0; i < runner_drawables.length; i++) {
 			runner_drawables[i] = new Paint();
 		}
-		
+
 		runner_drawables[0].setColor(Color.YELLOW);
 		runner_drawables[1].setColor(Color.BLUE);
 		runner_drawables[2].setColor(Color.BLACK);
 		runner_drawables[3].setColor(Color.RED);
-		
+
 		mainHolder.addCallback(this);
 	}
 
@@ -76,44 +76,47 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 	@Override
 	public void run() {
 
-		while (!isSurfaceReady);
-		
-		long previousFrameTime = System.currentTimeMillis();
+		while (!isSurfaceReady)
+			;
 
+		
 		while (isRunning) {
 
-			
+			startTime = System.currentTimeMillis();
 			
 			try {
-				Thread.sleep(50);
+				Thread.sleep(30);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			// Se la superficie non e' valida, esce dal while
-								
+
 			onDrawCanvas();
-			
-			currentTime = System.currentTimeMillis()-previousFrameTime;
-			previousFrameTime = currentTime;
-			
+
 		}
 	}
 
-	private synchronized void onDrawCanvas(){
-		
+	private synchronized void onDrawCanvas() {
+
 		// Prendiamo il mutex sul canvas
 		canvas = mainHolder.lockCanvas();
 		canvas.drawBitmap(bg_pic, bg_src, bg_dest, null);
 		for (int i = 0; i < runners.length; i++) {
-			runners[i].set(getPaddingLeft() + i * step, height-heights[i]-step,
-					step * (i + 1) + getPaddingLeft(), height-heights[i]);
+			runners[i].set(getPaddingLeft() + i * step, height - heights[i]
+					- step, step * (i + 1) + getPaddingLeft(), height
+					- heights[i]);
 			canvas.drawRect(runners[i], runner_drawables[i]);
 		}
 		mainHolder.unlockCanvasAndPost(canvas);
-		//notify();
+		// notify();
+
+		//calcolo il tempo passato rispetto ad una soglia relativa, startTime calcolato una tantum
+		currentTimeElapsed = (System.currentTimeMillis()-startTime);
+		
+		
 	}
-	
+
 	/*
 	 * Metodi di SurfaceView per la gestione del ciclo di vita
 	 */
@@ -129,7 +132,7 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 			}
 			break;
 		}
-		
+
 		renderingThread = null;
 	}
 
@@ -144,17 +147,17 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		
+
 		canvas = mainHolder.lockCanvas();
 		height = getHeight();
 		width = getWidth();
 		mainHolder.unlockCanvasAndPost(canvas);
-		
+
 		netWidth = width - getPaddingLeft() - getPaddingRight();
 		step = netWidth / 4;
 
@@ -167,9 +170,9 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 		bg_pic = BitmapFactory.decodeResource(getResources(),
 				R.drawable.terra_ws);
 		bg_src = new Rect(0, 0, bg_pic.getWidth(), bg_pic.getHeight());
-		
+
 		isSurfaceReady = true;
-		
+
 	}
 
 	@Override
@@ -177,12 +180,12 @@ public class RunnerView extends SurfaceView implements Runnable, SurfaceHolder.C
 		isSurfaceReady = false;
 	}
 
-	public void setHeights(int [] heights){
+	public void setHeights(int[] heights) {
 		this.heights = heights;
 	}
-	
-	public long getCurrentTime(){
-		return currentTime;
+
+	public long getCurrentTimeElapsed() {
+		return currentTimeElapsed;
 	}
-	
+
 }
