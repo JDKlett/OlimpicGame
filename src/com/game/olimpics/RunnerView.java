@@ -4,41 +4,36 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewTreeObserver.OnDrawListener;
 
 public class RunnerView extends SurfaceView implements Runnable,
 		SurfaceHolder.Callback {
 
 	private long startTime = 0;
 	private long currentTimeElapsed = 0;
-	private long previousTimeElapsed = 0;
 
 	private SurfaceHolder mainHolder;
 	private Thread renderingThread = null;
-	private int padding = 0;
 	private int height = 0;
 	private int width = 0;
 	private int netWidth = 0;
 	private int step = 0;
 	// questo attributo e' attualmente un paint ma deve essere esteso
-	Paint[] runner_drawables;
+	Bitmap[] runner_drawables;
 	int[] heights = { 0, 0, 0, 0 };
-	boolean isRunning = false;
 	boolean isSurfaceReady = false;
 	Canvas canvas = null;
 	Rect bg_dest = null;
 	RectF[] runners = null;
+	RectF endingRect = null;
 	Bitmap bg_pic = null;
-	Rect bg_src = null;
+	Bitmap bg_ending = null;
+
+	int drawingState = DrawingStates.MAIN_DRAWING;
 
 	public RunnerView(Context context) {
 		super(context);
@@ -57,15 +52,15 @@ public class RunnerView extends SurfaceView implements Runnable,
 
 	private void init() {
 		mainHolder = getHolder();
-		runner_drawables = new Paint[4];
-		for (int i = 0; i < runner_drawables.length; i++) {
-			runner_drawables[i] = new Paint();
-		}
-
-		runner_drawables[0].setColor(Color.YELLOW);
-		runner_drawables[1].setColor(Color.BLUE);
-		runner_drawables[2].setColor(Color.BLACK);
-		runner_drawables[3].setColor(Color.RED);
+		runner_drawables = new Bitmap[4];
+		runner_drawables[0] = BitmapFactory.decodeResource(getResources(),
+				R.drawable.player_1);
+		runner_drawables[1] = BitmapFactory.decodeResource(getResources(),
+				R.drawable.player_2);
+		runner_drawables[2] = BitmapFactory.decodeResource(getResources(),
+				R.drawable.player_3);
+		runner_drawables[3] = BitmapFactory.decodeResource(getResources(),
+				R.drawable.player_4);
 
 		mainHolder.addCallback(this);
 	}
@@ -79,11 +74,10 @@ public class RunnerView extends SurfaceView implements Runnable,
 		while (!isSurfaceReady)
 			;
 
-		
-		while (isRunning) {
+		while (drawingState == DrawingStates.MAIN_DRAWING) {
 
 			startTime = System.currentTimeMillis();
-			
+
 			try {
 				Thread.sleep(30);
 			} catch (InterruptedException e) {
@@ -93,7 +87,20 @@ public class RunnerView extends SurfaceView implements Runnable,
 			// Se la superficie non e' valida, esce dal while
 
 			onDrawCanvas();
+			// calcolo il tempo passato rispetto ad una soglia relativa,
+			// startTime calcolato una tantum
+			currentTimeElapsed = (System.currentTimeMillis() - startTime);
+		}
 
+		while (drawingState == DrawingStates.END_DRAWING) {
+			
+			try {
+				Thread.sleep(30);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			onDrawCanvasEnding();
 		}
 	}
 
@@ -101,43 +108,67 @@ public class RunnerView extends SurfaceView implements Runnable,
 
 		// Prendiamo il mutex sul canvas
 		canvas = mainHolder.lockCanvas();
-		canvas.drawBitmap(bg_pic, bg_src, bg_dest, null);
+		canvas.drawBitmap(bg_pic, null, bg_dest, null);
+		mainDraw();
+		mainHolder.unlockCanvasAndPost(canvas);
+
+	}
+
+	private synchronized void onDrawCanvasEnding() {
+
+		// Prendiamo il mutex sul canvas
+		canvas = mainHolder.lockCanvas();
+		canvas.drawBitmap(bg_pic, null, bg_dest, null);
+		endingDraw();
+		mainDraw();
+		mainHolder.unlockCanvasAndPost(canvas);
+
+	}
+
+	private void endingDraw() {
+		
+		int finalLineheight = 0;
+
+		if(heights[3]>0){
+		endingRect.set(0, 0, width, height-heights[3]);
+		canvas.drawBitmap(bg_ending, null, endingRect, null);
+		//set dinamically to endline
+		if(height-heights[3]>200){
+			drawingState = DrawingStates.STOP_DRAWING;
+		}
+		
+		}else{
+			if(finalLineheight<200){
+			endingRect.set(0, finalLineheight, width, (finalLineheight+=0.01));
+			canvas.drawBitmap(bg_ending, null, endingRect, null);
+			}else if(finalLineheight<800){
+				endingRect.set(0, (finalLineheight+=0.0001), width, (finalLineheight+=0.0001));
+				canvas.drawBitmap(bg_ending, null, endingRect, null);
+				
+			}else{
+				drawingState = DrawingStates.STOP_DRAWING;
+			}
+		}
+	}
+	
+	private void mainDraw() {
 		for (int i = 0; i < runners.length; i++) {
 			runners[i].set(getPaddingLeft() + i * step, height - heights[i]
 					- step, step * (i + 1) + getPaddingLeft(), height
 					- heights[i]);
-			canvas.drawRect(runners[i], runner_drawables[i]);
+			canvas.drawBitmap(runner_drawables[i], null, runners[i], null);
 		}
-		mainHolder.unlockCanvasAndPost(canvas);
-		// notify();
-
-		//calcolo il tempo passato rispetto ad una soglia relativa, startTime calcolato una tantum
-		currentTimeElapsed = (System.currentTimeMillis()-startTime);
-		
-		
 	}
 
 	/*
 	 * Metodi di SurfaceView per la gestione del ciclo di vita
 	 */
 	public void pause() {
-		isRunning = false;
-		while (true) {
-			// Blocca il thread finche' non termina l'esecuzione degli altri
-			// processi
-			try {
-				renderingThread.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			break;
-		}
-
-		renderingThread = null;
+		drawingState = DrawingStates.STOP_DRAWING;
 	}
 
 	public void resume() {
-		isRunning = true;
+		drawingState = DrawingStates.MAIN_DRAWING;
 		// Lancio il nostro thread
 		renderingThread = new Thread(this);
 		renderingThread.start();
@@ -163,14 +194,13 @@ public class RunnerView extends SurfaceView implements Runnable,
 
 		bg_dest = new Rect(0, 0, width, height);
 		runners = new RectF[4];
-
+		endingRect = new RectF();
 		for (int i = 0; i < runners.length; i++) {
 			runners[i] = new RectF();
 		}
 		bg_pic = BitmapFactory.decodeResource(getResources(),
 				R.drawable.terra_ws);
-		bg_src = new Rect(0, 0, bg_pic.getWidth(), bg_pic.getHeight());
-
+		bg_ending = BitmapFactory.decodeResource(getResources(), R.drawable.finish_line);
 		isSurfaceReady = true;
 
 	}
@@ -186,6 +216,18 @@ public class RunnerView extends SurfaceView implements Runnable,
 
 	public long getCurrentTimeElapsed() {
 		return currentTimeElapsed;
+	}
+
+	public void setDrawingState(int drawingState) {
+		this.drawingState = drawingState;
+	}
+
+	public static class DrawingStates {
+
+		public static int MAIN_DRAWING = 0;
+		public static int END_DRAWING = 1;
+		public static int STOP_DRAWING = 2;
+
 	}
 
 }

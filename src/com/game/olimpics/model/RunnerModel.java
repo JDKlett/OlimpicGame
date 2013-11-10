@@ -29,7 +29,11 @@ public class RunnerModel {
 	}
 	
 	public synchronized void increaseSpeed(){
-		speed = speed*1.05;
+		speed = speed*1.1;
+	}
+	
+	public synchronized void restoreSpeed(){
+		speed = speed/1.1;
 	}
 	
 	public synchronized void decreaseSpeed(){
